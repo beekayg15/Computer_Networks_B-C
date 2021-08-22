@@ -4,6 +4,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
 
 #define PORT 1515
 
@@ -77,6 +79,16 @@ void initiateGame(int sockfd) {
     int number_of_turns = 0;
     char buffer[1024];
 
+    bzero(buffer, 1024);
+
+    recv(sockfd, buffer, 1024, 0);
+        
+    if(strncmp("endgame", buffer, 7) == 0) {
+        printf("The client has ended the game!!\n");
+        close(sockfd);
+        exit(0);
+    }
+
     char number[4] = "    ";
     int count = 0;
 
@@ -106,17 +118,10 @@ void initiateGame(int sockfd) {
         bzero(buffer, 1024);
 
         recv(sockfd, buffer, 1024, 0);
-        
 
         if(strncmp("exit", buffer, 4) == 0) {
             printf("The client has left the current game!!\n");
             initiateGame(sockfd);
-        }
-        
-        if(strncmp("endgame", buffer, 7) == 0) {
-            printf("The client has ended the game!!\n");
-            close(sockfd);
-            exit(0);
         }
         
         printf("Turn Number : %d, %s",number_of_turns, buffer);

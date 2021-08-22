@@ -68,11 +68,13 @@ void openGame(int sockfd) {
     char buffer[1024];
 
     switch(choice) {
-        case '1': startGame(sockfd); break;
+        case '1': strcpy(buffer, "Continue");
+                  send(sockfd, buffer, 1024, 0);
+                  startGame(sockfd); break;
         case '2': instructions(sockfd); break;
         case '3': strcpy(buffer,"endgame");
         		  send(sockfd,buffer,1024,0);
-        	      close(sockfd);
+                  close(sockfd);
         	      system("clear");
         	      exit(0);
         	   
@@ -89,6 +91,7 @@ void startGame(int sockfd) {
     
     char buffer[1024];
     int n = 0;
+
     bzero(buffer, 1024);
     
     printf("\n\n\n\t\tGo on!! Make a Guess : ");
