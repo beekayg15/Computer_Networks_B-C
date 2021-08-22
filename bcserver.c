@@ -31,7 +31,7 @@ int main() {
     addr_len = sizeof(server_address);
     bzero(&server_address, addr_len);
 
-    server_address.sin_family = AF_INET;
+    server_address.sin_family = PF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(PORT);
 
@@ -106,13 +106,20 @@ void initiateGame(int sockfd) {
         bzero(buffer, 1024);
 
         recv(sockfd, buffer, 1024, 0);
-        printf("Turn Number : %d, %s",number_of_turns, buffer);
+        
 
         if(strncmp("exit", buffer, 4) == 0) {
             printf("The client has left the current game!!\n");
             initiateGame(sockfd);
-
         }
+        
+        if(strncmp("endgame", buffer, 7) == 0) {
+            printf("The client has ended the game!!\n");
+            close(sockfd);
+            exit(0);
+        }
+        
+        printf("Turn Number : %d, %s",number_of_turns, buffer);
 
         number_of_turns++;
 
@@ -125,7 +132,7 @@ void initiateGame(int sockfd) {
         if(bulls == 4) {
             bzero(buffer, 1024);
 
-            char temp[] = "Congarts!! Number of Turns Taken: _\n";
+            char temp[] = "Congrats!! Number of Turns Taken: _\n";
 
             for(int z=0; temp[z]!='\n'; z++) {
                 buffer[z] = temp[z];

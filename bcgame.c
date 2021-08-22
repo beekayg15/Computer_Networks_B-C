@@ -33,7 +33,7 @@ int main(){
     addr_len = sizeof(server_address);
     bzero(&server_address, addr_len);
 
-    server_address.sin_family = AF_INET;
+    server_address.sin_family = PF_INET;
     server_address.sin_port = htons(PORT);
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
@@ -65,11 +65,17 @@ void openGame(int sockfd) {
     printf("\n\n\tPress the corresponding number to continue......");
 
     char choice = getch();
+    char buffer[1024];
 
     switch(choice) {
         case '1': startGame(sockfd); break;
         case '2': instructions(sockfd); break;
-        case '3': exit(0);
+        case '3': strcpy(buffer,"endgame");
+        		  send(sockfd,buffer,1024,0);
+        	      close(sockfd);
+        	      system("clear");
+        	      exit(0);
+        	   
         default: openGame(sockfd);
 
     }
