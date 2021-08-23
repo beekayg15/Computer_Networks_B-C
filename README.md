@@ -31,6 +31,13 @@ gcc bcgame.c -o bcgame
 ./bcgame
 ```
 
+## Screen Shots
+<img src="screenshots/1.png"/>
+<img src="screenshots/2.png"/>
+<img src="screenshots/3.png"/>
+<img src="screenshots/4.png"/>
+<img src="screenshots/5.png"/>
+
 ## Components of Project :
 - **C** files - 2
 
