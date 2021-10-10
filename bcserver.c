@@ -8,8 +8,11 @@
 #include <unistd.h>
 
 #define PORT 1515
+#define PORT2 3232
 
 void initiateGame(int sockfd);
+void initiateMultiGame(int sockfd);
+void playMultiGame(int sockfd1, int sockfd2);
 int numberOfBulls(char guess[], char num[]);
 int numberOfCows(char guess[], char num[]);
 int valid(char guess[]);
@@ -87,6 +90,12 @@ void initiateGame(int sockfd) {
         printf("The client has ended the game!!\n");
         close(sockfd);
         exit(0);
+    }
+
+    if(buffer[0] == 'm') {
+        printf("The Player has entered Multiplayer Mode!!\n");
+        initiateMultiGame(sockfd);
+        return;
     }
 
     char number[4] = "    ";
@@ -198,6 +207,85 @@ void initiateGame(int sockfd) {
 
     return;
 
+}
+
+void initiateMultiGame(int sockfd) {
+    printf("In Multiplayer Mode!!\n");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+    strcpy(buffer, "f");
+
+    socklen_t addr_len;
+    struct sockaddr_in server_address;
+    int server_socket;
+
+    server_socket = socket(PF_INET, SOCK_STREAM, 0);
+
+    if(server_socket < 0) {
+        printf("Error While Creating Second Socket!!\n");
+        send(sockfd, buffer, 1024, 0);
+        initiateGame(sockfd);
+
+    } else {
+        printf("Second Socket Creation Successful!!\n");
+
+    }
+
+    addr_len = sizeof(server_address);
+    bzero(&server_address, addr_len);
+
+    server_address.sin_family = PF_INET;
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address.sin_port = htons(PORT2);
+
+    if(bind(server_socket, (struct sockaddr*)&server_address, addr_len) != 0) {
+        printf("Second Binding Failed!!\n");
+        send(sockfd, buffer, 1024, 0);
+        initiateGame(sockfd);
+
+    } else {
+        printf("Second Binding Successful!!\n");
+
+    }
+
+    if(listen(server_socket, 2) != 0) {
+        printf("Unable to Listen to Multiplayer Clients!!\n");
+        send(sockfd, buffer, 1024, 0);
+        initiateGame(sockfd);
+
+    } else {
+        printf("Waiting for Multiplayer Clients!!\n");
+
+    }
+
+    int client_socket;
+    struct sockaddr_in client_address;
+
+    client_socket = accept(server_socket, (struct sockaddr*)&client_address, &addr_len);
+
+    if(client_socket < 0) {
+        printf("Error in Establishing Connection with the Multiplayer Client!!\n");
+        send(sockfd, buffer, 1024, 0);
+        initiateGame(sockfd);
+
+    } else {
+        printf("Connection with Client Established Multiplayer Successfully!!\n");
+        buffer[0] = 's';
+        send(sockfd, buffer, 1024, 0);
+
+    }
+
+    playMultiGame(sockfd, client_socket);
+
+    return;
+}
+
+void playMultiGame(int sockfd1, int sockfd2) {
+    char buffer1[1024];
+    char buffer2[1024];
+
+    exit(0);
 }
 
 int numberOfBulls(char guess[], char num[]) {

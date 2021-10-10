@@ -13,6 +13,7 @@ void openGame(int sockfd);
 int getch(void);
 void instructions(int sockfd);
 void startGame(int sockfd);
+void startMultiGame(int sockfd);
 
 int main(){
     socklen_t addr_len;
@@ -59,20 +60,24 @@ void openGame(int sockfd) {
     system("clear");
 
     printf("\n\n\n\tBULLS AND COWS");
-    printf("\n\n\t\t1.Start Game");
-    printf("\n\n\t\t2.Instructions");
-    printf("\n\n\t\t3.Quit");
+    printf("\n\n\t\t1.Single Player");
+    printf("\n\n\t\t2.Multi Player");
+    printf("\n\n\t\t3.Instructions");
+    printf("\n\n\t\t4.Quit");
     printf("\n\n\tPress the corresponding number to continue......");
 
     char choice = getch();
     char buffer[1024];
 
     switch(choice) {
-        case '1': strcpy(buffer, "Continue");
+        case '1': strcpy(buffer, "sContinue");
                   send(sockfd, buffer, 1024, 0);
                   startGame(sockfd); break;
-        case '2': instructions(sockfd); break;
-        case '3': strcpy(buffer,"endgame");
+        case '2': strcpy(buffer, "mContinue");
+                  send(sockfd, buffer, 1024, 0);
+                  startMultiGame(sockfd); break;
+        case '3': instructions(sockfd); break;
+        case '4': strcpy(buffer,"endgame");
         		  send(sockfd,buffer,1024,0);
                   close(sockfd);
         	      system("clear");
@@ -122,6 +127,42 @@ void startGame(int sockfd) {
         startGame(sockfd);
 
     }
+
+    return;
+
+}
+
+void startMultiGame(int sockfd) {
+    system("clear");
+
+    printf("\n\n\t\tYou have entered Multiplayer Mode\n");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+    recv(sockfd, buffer, 1024, 0);
+
+    if(buffer[0] == 'f') {
+        printf("\n\t\tError while trying to connect with second player!!\n");
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        openGame(sockfd);
+
+    } else {
+        printf("\n\t\tConnection with second player has been Established!!\n");
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+        system("clear");
+        
+    }
+
+    system("clear");
+
+    printf("\n\n\tYou are Ready to Play!!\n");
+
+    openGame(sockfd);
 
     return;
 
