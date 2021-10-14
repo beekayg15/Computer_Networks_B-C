@@ -282,8 +282,120 @@ void initiateMultiGame(int sockfd) {
 }
 
 void playMultiGame(int sockfd1, int sockfd2) {
+    int number_of_turns = 0;
     char buffer1[1024];
     char buffer2[1024];
+    char code1[5];
+    char code2[5];
+    bzero(code1, 5);
+    bzero(code2, 5);
+
+    recv(sockfd1, code1, 5, 0);
+    recv(sockfd2, code2, 5, 0);
+
+    printf("Secret Code of Player 1 : %s\n", code1);
+    printf("Secret Code of Player 2 : %s\n", code2);
+
+    bzero(buffer1, 1024);
+    bzero(buffer2, 1024);
+
+    strcpy(buffer1, "continue");
+    strcpy(buffer2, "continue");
+
+    send(sockfd1, buffer1, 1024, 0);
+    send(sockfd2, buffer2, 1024, 0);
+
+    printf("\nPlayers are ready to mave their guesses!!!\n\n");
+
+    while(1>0) {
+        number_of_turns++;
+
+        //Player 1
+        bzero(buffer1, 1024);
+
+        recv(sockfd1, buffer1, 1024, 0);
+
+        printf("\nPlayer 1 in Turn Number : %d, %s\n",number_of_turns, buffer1);
+
+        int bulls1 = numberOfBulls(buffer1, code2);
+        int cows1 = numberOfCows(buffer1, code2);
+        
+        printf("Number of Bulls: %d\n", bulls1);
+        printf("Number of Cows: %d\n", cows1);
+
+        bzero(buffer1, 1024);
+
+        char temp[] = "Player 1 got Bulls: _; Cows: _; In turn: _\n\0";
+
+        for(int z=0; temp[z]!='\0'; z++) {
+            buffer1[z] = temp[z];
+
+        }
+
+        buffer1[20] = (char)(bulls1 + 48);
+        buffer1[29] = (char)(cows1 + 48);
+
+        char s[4]; 
+        sprintf(s,"%d", number_of_turns);
+        buffer1[41] = s[0];
+
+        for(int z=1; z<5 && s[z-1]!='\0'; z++) {
+            if(s[z] == '\0') {
+                buffer1[z+41] = '\n';
+
+            } else {
+                buffer1[z+41] = s[z];
+
+            }
+
+        }
+
+        send(sockfd1, buffer1, 1024, 0);
+        send(sockfd2, buffer1, 1024, 0);
+
+        //Player 2
+        bzero(buffer2, 1024);
+
+        recv(sockfd2, buffer2, 1024, 0);
+
+        printf("\nPlayer 2 in Turn Number : %d, %s\n",number_of_turns, buffer2);
+
+        int bulls2 = numberOfBulls(buffer2, code1);
+        int cows2 = numberOfCows(buffer2, code1);
+        
+        printf("Number of Bulls: %d\n", bulls2);
+        printf("Number of Cows: %d\n", cows2);
+
+        bzero(buffer2, 1024);
+
+        strcpy(temp, "Player 2 got Bulls: _; Cows: _; In turn: _\n\0");
+
+        for(int z=0; temp[z]!='\0'; z++) {
+            buffer2[z] = temp[z];
+
+        }
+
+        buffer2[20] = (char)(bulls2 + 48);
+        buffer2[29] = (char)(cows2 + 48);
+
+        sprintf(s,"%d", number_of_turns);
+        buffer2[41] = s[0];
+
+        for(int z=1; z<5 && s[z-1]!='\0'; z++) {
+            if(s[z] == '\0') {
+                buffer2[z+41] = '\n';
+
+            } else {
+                buffer2[z+41] = s[z];
+
+            }
+
+        }
+
+        send(sockfd1, buffer2, 1024, 0);
+        send(sockfd2, buffer2, 1024, 0);
+
+    }
 
     exit(0);
 }

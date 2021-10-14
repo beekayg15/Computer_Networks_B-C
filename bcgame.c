@@ -135,14 +135,14 @@ void startGame(int sockfd) {
 void startMultiGame(int sockfd) {
     system("clear");
 
-    printf("\n\n\t\tYou have entered Multiplayer Mode\n");
+    printf("\n\n\t\tYou have entered Multiplayer Mode\n\n\n\t\tWaiting for Player 2 to establish connection with the server");
 
     char buffer[1024];
     bzero(buffer, 1024);
     recv(sockfd, buffer, 1024, 0);
 
     if(buffer[0] == 'f') {
-        printf("\n\t\tError while trying to connect with second player!!\n");
+        printf("\n\n\t\tError while trying to connect with second player!!\n");
 
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
@@ -150,7 +150,7 @@ void startMultiGame(int sockfd) {
         openGame(sockfd);
 
     } else {
-        printf("\n\t\tConnection with second player has been Established!!\n");
+        printf("\n\n\t\tConnection with second player has been Established!!\n");
 
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
@@ -160,10 +160,75 @@ void startMultiGame(int sockfd) {
 
     system("clear");
 
+    char code[5];
+    bzero(code, 5);
+    bzero(buffer, 1024);
+    int count = 0;
+    int turn = 0;
+
     printf("\n\n\tYou are Ready to Play!!\n");
 
-    openGame(sockfd);
+    printf("\n\n\t\tEnter your secret four digit code : ");
+    while(count < 4) {
+        char ch = getch();
+        int flag = 1;
+        for(int j=0; j<count; j++) {
+            if(ch == code[j]) {
+                flag = 0;
+            }
+        }
+        if(flag == 1 && ch >= '1' && ch <= '9') {
+            code[count++] = ch;
+            printf("*");
+        }
+    }
+    code[4] = '\0';
+    send(sockfd, code, 4, 0);
 
+    system("clear");
+    printf("\n\n\t\tWaiting for Player 2 to Enter his secret Code...\n");
+
+    recv(sockfd, buffer, 1024, 0);
+    printf("\n\n\t\tYou are set to Guess the opponents Secret Code. Are you ready!!!");
+
+    printf("\n\n\t\tPress any Key to Conitnue......");
+    getch();
+
+    while(1>0) {
+        system("clear");
+
+        printf("\n\n\t\tTurn : %d", ++turn);
+
+        int n = 0;
+
+        bzero(buffer, 1024);
+        
+        printf("\n\n\n\t\tGo on!! Make a Guess : ");
+        while((buffer[n++] = getchar()) != '\n');
+
+        send(sockfd, buffer, 1024, 0);
+
+        bzero(buffer, 1024);
+        recv(sockfd, buffer, 1024, 0);
+
+        printf("\n\n\t\t%s", buffer);
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        system("clear");
+
+        printf("\n\n\t\tTurn : %d\n\n\t\tWaiting for Player 2 to make a Guess!!...", turn);
+        bzero(buffer, 1024);
+
+        recv(sockfd, buffer, 1024, 0);
+        printf("\n\n\t\t%s", buffer);
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+    }
+
+    exit(0);
     return;
 
 }
