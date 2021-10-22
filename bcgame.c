@@ -14,6 +14,21 @@ int getch(void);
 void instructions(int sockfd);
 void startGame(int sockfd);
 void startMultiGame(int sockfd);
+void leaderbd(int sockfd);
+void retrieveSLB(int sockfd);
+void retrieveMLB(int sockfd);
+
+struct user{
+	int userid;
+	char name[100];
+	int score;
+} players;
+
+struct reg_details{
+	int userid;
+	char name[100];
+	char password[100];
+} player;
 
 int main(){
     socklen_t addr_len;
@@ -50,6 +65,8 @@ int main(){
     printf("Press any Key to Continue......");
     getch();
 
+    player.userid = 1;
+
     openGame(client_socket);
 
     return 0;
@@ -63,7 +80,8 @@ void openGame(int sockfd) {
     printf("\n\n\t\t1.Single Player");
     printf("\n\n\t\t2.Multi Player");
     printf("\n\n\t\t3.Instructions");
-    printf("\n\n\t\t4.Quit");
+    printf("\n\n\t\t4.Leaderboard");
+    printf("\n\n\t\t5.Quit");
     printf("\n\n\tPress the corresponding number to continue......");
 
     char choice = getch();
@@ -77,7 +95,10 @@ void openGame(int sockfd) {
                   send(sockfd, buffer, 1024, 0);
                   startMultiGame(sockfd); break;
         case '3': instructions(sockfd); break;
-        case '4': strcpy(buffer,"endgame");
+        case '4': strcpy(buffer, "lContinue");
+                  send(sockfd, buffer, 1024, 0);
+                  leaderbd(sockfd);break;
+        case '5': strcpy(buffer,"endgame");
         		  send(sockfd,buffer,1024,0);
                   close(sockfd);
         	      system("clear");
@@ -196,6 +217,7 @@ void startMultiGame(int sockfd) {
 
     while(1>0) {
         system("clear");
+        int Found = 0;
 
         printf("\n\n\t\tTurn : %d", ++turn);
 
@@ -213,6 +235,11 @@ void startMultiGame(int sockfd) {
 
         printf("\n\n\t\t%s", buffer);
 
+        if(buffer[20] == '4') {
+            Found = 1;
+            printf("\n\n\t\tCongrats!! You have Discovered the Secret Code\n\t\tLet's Wait and See if Player 2 is able to Draw the Game");
+        }
+
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
 
@@ -223,6 +250,27 @@ void startMultiGame(int sockfd) {
 
         recv(sockfd, buffer, 1024, 0);
         printf("\n\n\t\t%s", buffer);
+
+        if(Found == 1 && buffer[20] == '4') {
+            printf("\n\n\t\tUnfortunately, Player 2 managed to Draw the Game!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......");
+            getch();
+            openGame(sockfd);
+        }
+
+        if(Found == 0 && buffer[20] == '4') {
+            printf("\n\n\t\tAlas, You have Lost the Game to Player 2!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......");
+            getch();
+            openGame(sockfd);
+        }
+
+        if(Found == 1 && buffer[20] != '4') {
+            printf("\n\n\t\tCongrats, You have Won the Game!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......");
+            getch();
+            openGame(sockfd);
+        }
 
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
@@ -255,6 +303,97 @@ void instructions(int sockfd) {
 
     return;
 
+}
+
+void leaderbd(int sockfd) {
+    system("clear");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    printf("\n\tLeaderboard");
+    printf("\n\n\t\t1.Single Player Leaderboard");
+    printf("\n\n\t\t2.Multi Player Leaderboard");
+    printf("\n\n\t\t3.Back");
+    printf("\n\n\tPress the corresponding number to continue......");
+
+    char choice = getch();
+
+    switch(choice) {
+        case '1': strcpy(buffer, "sLeader");
+                  send(sockfd, buffer, 1024, 0);
+                  retrieveSLB(sockfd); break;
+        case '2': strcpy(buffer, "mLeader");
+                  send(sockfd, buffer, 1024, 0);
+                  retrieveMLB(sockfd); break;
+        case '3': strcpy(buffer, "back");
+                  send(sockfd, buffer, 1024, 0);
+                  openGame(sockfd); break;
+        	   
+        default: leaderbd(sockfd);
+
+    }
+
+}
+
+void retrieveSLB(int sockfd) {
+    system("clear");
+    printf("\n\n\t\tSingle Player Leaderboard\n");
+
+    char line[1024];
+    int count = 0;
+
+    while(1>0) {
+        bzero(line, 1024);
+        recv(sockfd, line, sizeof(line), 0);
+
+        if(strncmp("1111", line, 4) == 0) {
+            break;
+        }
+
+        count++;
+        printf("\n%s\n",line);
+    }
+
+    if(count == 0) {
+        printf("\n\t\tUnable to open the Leaderboard");
+    }
+
+    printf("\n\n\tPress any Key to continue......");
+    getch();
+    
+    openGame(sockfd);
+
+}
+
+void retrieveMLB(int sockfd) {
+    system("clear");
+    printf("\n\n\tMulti-Player Leaderboard\n");
+
+    char line[1024];
+    int count = 0;
+
+    while(1>0) {
+        bzero(line, 1024);
+        recv(sockfd, line, sizeof(line), 0);
+
+        if(strncmp("1111", line, 4) == 0) {
+            break;
+        }
+
+        count++;
+        printf("\n%s\n",line);
+    }
+
+    if(count == 0) {
+        printf("\n\t\tUnable to open the Leaderboard");
+    }
+
+    printf("\n\nPress any Key to continue......");
+    getch();
+    
+    openGame(sockfd);
+    
 }
 
 int getch(void) {

@@ -93,6 +93,7 @@ void startPlayer(int sockfd) {
 
     while(1>0) {
         system("clear");
+        int Found = 0;
 
         printf("\n\n\t\tTurn : %d\n\n\t\tWaiting for Player 1 to make a Guess!!...", ++turn);
         bzero(buffer, 1024);
@@ -100,12 +101,22 @@ void startPlayer(int sockfd) {
         recv(sockfd, buffer, 1024, 0);
         printf("\n\n\t\t%s", buffer);
 
+        char bull = buffer[20];
+        if(bull == '4') {
+            Found = 1;
+            printf("\n\n\tPlayer 1 Has found Your Secret Code");
+        }
+
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
     
         system("clear");
 
         printf("\n\n\t\tTurn : %d", turn);
+
+        if(Found == 1) {
+            printf("\n\n\t\tBeware!! This is your Last turn to find the Code!");
+        }
 
         int n = 0;
 
@@ -120,6 +131,30 @@ void startPlayer(int sockfd) {
         recv(sockfd, buffer, 1024, 0);
 
         printf("\n\n\t\t%s", buffer);
+
+        if(Found == 1 && buffer[20] == '4') {
+            printf("\n\n\t\tLuckily, You have managed to draw the Game!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......\n");
+            getch();
+            close(sockfd);
+            exit(0);
+        }
+
+        if(Found == 1 && buffer[20] != '4') {
+            printf("\n\n\t\tAlas, You have Lost the Game to Player 1!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......\n");
+            getch();
+            close(sockfd);
+            exit(0);
+        }
+
+        if(Found == 0 && buffer[20] == '4') {
+            printf("\n\n\t\tCongrats, You have Won the Game!!!");
+            printf("\n\n\t\tPress any Key to Conitnue......\n");
+            getch();
+            close(sockfd);
+            exit(0);
+        }
 
         printf("\n\n\t\tPress any Key to Conitnue......");
         getch();
