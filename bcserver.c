@@ -25,6 +25,11 @@ void updatemultiplayerleaderboard(int user1,int user2,int user1score,int user2sc
 void printmultiplayerleaderboard(int sockfd);
 void transferSLB(int sockfd);
 void transferMLB(int sockfd);
+void login(int sockfd, int player);
+void register_user(int sockfd, int player);
+void loginOrRegister(int sockfd, int player);
+int get_name_by_id(char user_name[]);
+int unique_user(char user_name[]);
 
 struct user{
 	int userid;
@@ -39,6 +44,7 @@ struct reg_details{
 } player1, player2;
 
 char name[100];
+int temp_sockfd;
 
 int main() {
     FILE* fptr  = fopen("leaderboard.bin", "ab");
@@ -103,9 +109,27 @@ int main() {
 
     }
 
-    initiateGame(client_socket);
+    temp_sockfd = client_socket;
+
+    loginOrRegister(client_socket, 1);
 
     return 0;
+
+}
+
+void loginOrRegister(int sockfd, int player) {
+    printf("Asking Player %d to Register or Login...\n", player);
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    recv(sockfd, buffer, 1024, 0);
+
+    if(buffer[0] == '1') {
+        register_user(sockfd, player);
+    } 
+
+    login(sockfd, player);
 
 }
 
@@ -147,6 +171,12 @@ void initiateGame(int sockfd) {
     if(buffer[0] == 'm') {
         printf("The Player has entered Multiplayer Mode!!\n");
         initiateMultiGame(sockfd);
+        return;
+    }
+
+    if(buffer[0] == 'r') {
+        printf("The Player has Logged Out!!\n");
+        loginOrRegister(sockfd, 1);
         return;
     }
 
@@ -330,12 +360,16 @@ void initiateMultiGame(int sockfd) {
 
     }
 
-    playMultiGame(sockfd, client_socket);
+    loginOrRegister(client_socket, 2);
 
     return;
 }
 
 void playMultiGame(int sockfd1, int sockfd2) {
+    if(sockfd1 == 0) {
+        sockfd1 = temp_sockfd;
+    }
+
     int number_of_turns = 0;
     char buffer1[1024];
     char buffer2[1024];
@@ -627,7 +661,7 @@ void printsingleplayerleaderboard(int sockfd) {
 	fptr  = fopen("leaderboard.bin", "r+b");
 	if (fptr == NULL) {
 		printf("Unable to open : leaderboard.bin");
-        strcpy(line, "1111");
+        strcpy(line, "0000");
         send(sockfd, line, 1024, 0);
         return;
 	}
@@ -656,29 +690,31 @@ void printsingleplayerleaderboard(int sockfd) {
 			}
 		}
 	}
+
+    printf("\n%d\n", count);
+
 	for(int i=0;i<count;i++) {
-		//printf("%d -> %s -> %d\n",arr[i].userid,arr[i].name,arr[i].score);
+		printf("%d -> %s -> %d\n",arr[i].userid,arr[i].name,arr[i].score);
 
-        char *id;
-        char *sc;
-        char *result;
-        sprintf(id,"%d", arr[i].userid);
-        sprintf(sc,"%d", arr[i].score);
+        char sc[1024];
+        char id[1024];
 
-        strcpy(result, id);
-        strcat(result, " -> ");
-        strcat(result, arr[i].name);
-        strcat(result, " -> ");
-        strcat(result, sc);
-        strcat(result, "\0");
-
-        strcpy(line, result);
-
-        send(sockfd, line, 1024, 0);
+        bzero(id,1024);
         bzero(line,1024);
+        bzero(sc,1024);
+
+        strcpy(line, arr[i].name);
+        sprintf(sc, "%d", arr[i].score);
+        sprintf(id, "%d", arr[i].userid);
+        
+        
+        send(sockfd, id, 1024, 0);
+        send(sockfd, line, 1024, 0);
+        send(sockfd, sc, 1024, 0);
 
 	}
-    strcpy(line, "1111");
+    bzero(line, 1024);
+    strcpy(line, "0000");
     send(sockfd, line, 1024, 0);
 
     fclose(fptr);
@@ -724,7 +760,7 @@ void printmultiplayerleaderboard(int sockfd) {
 	FILE* file = fopen(fileName, "r"); 
 	if(!file) {
 		printf("\n Unable to open : %s ", fileName);
-        strcpy(line, "1111");
+        strcpy(line, "0000");
         send(sockfd, line, 1024, 0);
         return;
 	}
@@ -734,7 +770,7 @@ void printmultiplayerleaderboard(int sockfd) {
 		//printf("\n%s\n",line);
         bzero(line,1024);
 	}
-    strcpy(line, "1111");
+    strcpy(line, "0000");
     send(sockfd, line, 1024, 0);
 
 	fclose(file);
@@ -751,4 +787,187 @@ void transferMLB(int sockfd) {
     printmultiplayerleaderboard(sockfd);
     initiateGame(sockfd);
 
+}
+
+
+void login(int sockfd, int player) {
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100], ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    recv(sockfd, pname, 100, 0);
+    recv(sockfd, ppassword, 100, 0);
+
+	struct reg_details user1;
+	int flag = 0;
+
+	FILE* fp = fopen("Registered_users.bin","rb");
+	if(fp == NULL) {
+		printf("\n Unable to open : Registered_users.bin");
+
+	} else {
+
+        int user_id = get_name_by_id(pname);
+
+        while(fread(&user1, sizeof(user1), 1, fp)) {
+            if(user1.userid == user_id) {
+                if(strcmp(user1.password,ppassword)==0) {
+
+                    strcpy(buffer, "1");
+                    send(sockfd, buffer, 1024, 0);
+                    printf("\nLogin Authentication Successful!!\n");
+                    fclose(fp);
+
+                    flag = 1;
+
+                    if(player == 1) {
+                        player1.userid = user1.userid;
+                        strcpy(player1.name, pname);
+                        strcpy(player1.password, ppassword);
+
+                        initiateGame(sockfd);
+
+                    } else {
+                        player2.userid = user1.userid;
+                        strcpy(player2.name, pname);
+                        strcpy(player2.password, ppassword);
+
+                        playMultiGame(0, sockfd);
+                    }
+                    return;
+
+                } else {
+                    printf("\nIncorrect Password\n");
+                    fclose(fp);
+                    break;
+                }
+            }
+        }
+    }
+
+    strcpy(buffer, "2");
+    send(sockfd, buffer, 1024, 0);
+
+    recv(sockfd, buffer, 1024, 0);
+
+	if(buffer[0] == '1') {
+		register_user(sockfd, player);
+
+	}
+	login(sockfd,player);
+
+}
+
+void register_user(int sockfd, int player) {
+    printf("\nRegistration\n");
+	struct reg_details reg,temp;
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100],ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    recv(sockfd, pname, 100, 0);
+
+    strcpy(reg.name,pname);
+
+    if(unique_user(reg.name)==0) {
+        printf("\nUser name already taken\n");
+
+        strcpy(buffer, "Invalid");
+        send(sockfd, buffer, 1024, 0);
+        
+        register_user(sockfd, player);
+        return;
+    }
+
+    strcpy(buffer, "Valid");
+    send(sockfd, buffer, 1024, 0);
+
+    recv(sockfd, ppassword, 100, 0);
+
+    strcpy(reg.password,ppassword);
+
+	FILE* fp = fopen("Registered_users.bin","rb");
+	if(fp!=NULL) {
+		fp = fopen("Registered_users.bin","ab+");
+		fseek(fp,-1*sizeof(reg),SEEK_END);
+		fread(&temp,sizeof(temp),1,fp);
+
+	} else {
+		fp = fopen("Registered_users.bin","wb");
+		temp.userid = 0;
+		for(int i=0; i<7;i++) {
+			temp.userid = temp.userid*10 + rand()%10;
+
+		}
+	}
+
+
+	reg.userid = temp.userid+1;
+	printf("\nRegistration succesfull, player's user_id = %d\n",reg.userid);
+
+    bzero(buffer, 1024);
+    sprintf(buffer, "%d", reg.userid);
+
+    send(sockfd, buffer, 1024, 0);
+
+    printf("\nID SENT\n");
+
+	fwrite(&reg,sizeof(reg),1,fp);
+    fclose(fp);
+
+    login(sockfd, player);
+
+}
+
+int unique_user(char user_name[]) {
+
+	FILE* file = fopen("Registered_users.bin","rb");
+	if(!file) {
+		printf("\n Unable to open : Registered_users.bin");
+        return 1;
+	}
+
+	struct reg_details u;
+	int i=0;
+
+	while(fread(&u, sizeof(u), 1, file)) {
+		if(strcmp(u.name,user_name)==0) {
+			return 0;
+		}
+	}
+
+	fclose(file);
+	return 1;
+}
+
+int get_name_by_id(char user_name[])
+{
+
+	FILE* file = fopen("Registered_users.bin","rb");
+	if(!file)
+	{
+		printf("\n Unable to open : Registered_users.bin");
+        exit(0);
+	}
+	struct reg_details u;
+	int i=0;
+	while(fread(&u, sizeof(u), 1, file))
+	{
+		//printf("\n %d %d %d\n",u.user_id,user_id,i++);
+		if(strcmp(u.name,user_name)==0)
+		{
+			return u.userid;
+		}
+	}
+
+	fclose(file);
+	return -1;
 }

@@ -11,6 +11,9 @@
 
 void startPlayer(int sockfd);
 int getch(void);
+void login(int sockfd);
+void loginScreen(int sockfd);
+void register_user(int sockfd);
 
 int main() {
     socklen_t addr_len;
@@ -47,7 +50,7 @@ int main() {
     printf("Press any Key to Continue......");
     getch();
 
-    startPlayer(client_socket);
+    loginScreen(client_socket);
 
     return 0;
 
@@ -178,5 +181,132 @@ int getch(void) {
     tcsetattr( STDIN_FILENO, TCSANOW, &oldattr );
 
     return ch;
+
+}
+
+void loginScreen(int sockfd) {
+    system("clear");
+
+    printf("\n\n\n\tBULLS AND COWS - LOGIN");
+    
+    char c;
+	printf("\n\n\t\tPress any key to continue..... \n\n\t\tIf you are a new user, press 'r' to register.....");
+	c = getch();
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    if(c == 'r') {
+        strcpy(buffer, "1");
+        send(sockfd, buffer, 1024, 0);
+        register_user(sockfd);
+    } 
+
+    
+    strcpy(buffer, "2");
+    send(sockfd, buffer, 1024, 0);
+    login(sockfd);
+
+}
+
+void login(int sockfd) {
+    system("clear");
+	printf("\n\n\tBULLS AND COWS - LOG IN");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100], ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    printf("\n\n\t\tEnter user name : ");
+
+    int i;
+    for(i=0;(pname[i]=getchar())!='\n';i++);
+	pname[i] = '\0';
+    send(sockfd, pname, 100, 0);
+
+    printf("\n\n\t\tEnter password : ");
+
+    for(i=0;(ppassword[i]=getchar())!='\n';i++);
+	ppassword[i] = '\0';
+    send(sockfd, ppassword, 100, 0);
+
+    recv(sockfd, buffer, 1024, 0);
+
+    if(buffer[0] == '1') {
+        printf("\n\n\t\tYour Authentication was Successful!!");
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        startPlayer(sockfd);
+    }
+
+    printf("\n\n\t\tYour Authentication Failed!!");
+    printf("\n\n\t\tPress any Key to Try Again or 'r' to Under Go Registration...");
+    char x = getch();
+
+    bzero(buffer, 1024);
+    if(x == 'r') {
+        strcpy(buffer, "1");
+        send(sockfd, buffer, 1024, 0);
+        register_user(sockfd);
+
+    } else {
+        strcpy(buffer, "2");
+        send(sockfd, buffer, 1024, 0);
+        login(sockfd);
+    }
+
+}
+
+void register_user(int sockfd) {
+    system("clear");
+    printf("\n\n\tBULLS AND COWS - REGISTRATION");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100], ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    printf("\n\n\t\tEnter user name : ");
+
+    int i;
+    for(i=0;(pname[i]=getchar())!='\n';i++);
+	pname[i] = '\0';
+
+    send(sockfd, pname, 100, 0);
+
+    recv(sockfd, buffer, 1024, 0);
+
+    if(strncmp("Invalid", buffer, 7) == 0) {
+        printf("\n\n\t\tUser name already taken");
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        register_user(sockfd);
+
+    }
+
+    printf("\n\n\t\tEnter password : ");
+
+    for(i=0;(ppassword[i]=getchar())!='\n';i++);
+	ppassword[i] = '\0';
+
+    send(sockfd, ppassword, 100, 0);
+
+    bzero(buffer, 1024);
+    recv(sockfd, buffer, 1024, 0);
+
+    printf("\nRegistration Successful!! Your user_id is %s\n", buffer);
+
+    printf("\n\n\t\tPress any Key to Conitnue......");
+    getch();
+
+    login(sockfd);
 
 }

@@ -17,6 +17,9 @@ void startMultiGame(int sockfd);
 void leaderbd(int sockfd);
 void retrieveSLB(int sockfd);
 void retrieveMLB(int sockfd);
+void login(int sockfd);
+void loginScreen(int sockfd);
+void register_user(int sockfd);
 
 struct user{
 	int userid;
@@ -67,9 +70,136 @@ int main(){
 
     player.userid = 1;
 
-    openGame(client_socket);
+    loginScreen(client_socket);
 
     return 0;
+
+}
+
+void loginScreen(int sockfd) {
+    system("clear");
+
+    printf("\n\n\n\tBULLS AND COWS - LOGIN");
+    
+    char c;
+	printf("\n\n\t\tPress any key to continue..... \n\n\t\tIf you are a new user, press 'r' to register.....");
+	c = getch();
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    if(c == 'r') {
+        strcpy(buffer, "1");
+        send(sockfd, buffer, 1024, 0);
+        register_user(sockfd);
+    } 
+
+    
+    strcpy(buffer, "2");
+    send(sockfd, buffer, 1024, 0);
+    login(sockfd);
+
+}
+
+void login(int sockfd) {
+    system("clear");
+	printf("\n\n\tBULLS AND COWS - LOG IN");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100], ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    printf("\n\n\t\tEnter user name : ");
+
+    int i;
+    for(i=0;(pname[i]=getchar())!='\n';i++);
+	pname[i] = '\0';
+    send(sockfd, pname, 100, 0);
+
+    printf("\n\n\t\tEnter password : ");
+
+    for(i=0;(ppassword[i]=getchar())!='\n';i++);
+	ppassword[i] = '\0';
+    send(sockfd, ppassword, 100, 0);
+
+    recv(sockfd, buffer, 1024, 0);
+
+    if(buffer[0] == '1') {
+        printf("\n\n\t\tYour Authentication was Successful!!");
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        openGame(sockfd);
+    }
+
+    printf("\n\n\t\tYour Authentication Failed!!");
+    printf("\n\n\t\tPress any Key to Try Again or 'r' to Under Go Registration...");
+    char x = getch();
+
+    bzero(buffer, 1024);
+    if(x == 'r') {
+        strcpy(buffer, "1");
+        send(sockfd, buffer, 1024, 0);
+        register_user(sockfd);
+
+    } else {
+        strcpy(buffer, "2");
+        send(sockfd, buffer, 1024, 0);
+        login(sockfd);
+    }
+
+}
+
+void register_user(int sockfd) {
+    system("clear");
+    printf("\n\n\tBULLS AND COWS - REGISTRATION");
+
+    char buffer[1024];
+    bzero(buffer, 1024);
+
+    char pname[100], ppassword[100];
+    bzero(pname, 100);
+    bzero(ppassword, 100);
+
+    printf("\n\n\t\tEnter user name : ");
+
+    int i;
+    for(i=0;(pname[i]=getchar())!='\n';i++);
+	pname[i] = '\0';
+
+    send(sockfd, pname, 100, 0);
+
+    recv(sockfd, buffer, 1024, 0);
+
+    if(strncmp("Invalid", buffer, 7) == 0) {
+        printf("\n\n\t\tUser name already taken");
+
+        printf("\n\n\t\tPress any Key to Conitnue......");
+        getch();
+
+        register_user(sockfd);
+
+    }
+
+    printf("\n\n\t\tEnter password : ");
+
+    for(i=0;(ppassword[i]=getchar())!='\n';i++);
+	ppassword[i] = '\0';
+
+    send(sockfd, ppassword, 100, 0);
+
+    bzero(buffer, 1024);
+    recv(sockfd, buffer, 1024, 0);
+
+    printf("\nRegistration Successful!! Your user_id is %s\n", buffer);
+
+    printf("\n\n\t\tPress any Key to Conitnue......");
+    getch();
+
+    login(sockfd);
 
 }
 
@@ -81,7 +211,8 @@ void openGame(int sockfd) {
     printf("\n\n\t\t2.Multi Player");
     printf("\n\n\t\t3.Instructions");
     printf("\n\n\t\t4.Leaderboard");
-    printf("\n\n\t\t5.Quit");
+    printf("\n\n\t\t5.Log Out");
+    printf("\n\n\t\t6.Quit");
     printf("\n\n\tPress the corresponding number to continue......");
 
     char choice = getch();
@@ -98,7 +229,10 @@ void openGame(int sockfd) {
         case '4': strcpy(buffer, "lContinue");
                   send(sockfd, buffer, 1024, 0);
                   leaderbd(sockfd);break;
-        case '5': strcpy(buffer,"endgame");
+        case '5': strcpy(buffer, "rContinue");
+                  send(sockfd, buffer, 1024, 0);
+                  loginScreen(sockfd); break;
+        case '6': strcpy(buffer,"endgame");
         		  send(sockfd,buffer,1024,0);
                   close(sockfd);
         	      system("clear");
@@ -344,15 +478,24 @@ void retrieveSLB(int sockfd) {
     int count = 0;
 
     while(1>0) {
-        bzero(line, 1024);
-        recv(sockfd, line, sizeof(line), 0);
+        char sc[1024];
+        char id[1024];
 
-        if(strncmp("1111", line, 4) == 0) {
+        bzero(id, 1024);
+        recv(sockfd, id, sizeof(line), 0);
+
+        if(strncmp("0000", id, 4) == 0) {
             break;
         }
 
+        bzero(line, 1024);
+        recv(sockfd, line, sizeof(line), 0);
+
+        bzero(sc, 1024);
+        recv(sockfd, sc, sizeof(line), 0);
+
         count++;
-        printf("\n%s\n",line);
+        printf("\n\t\t%s\t%s\t%s\n",id,line,sc);
     }
 
     if(count == 0) {
@@ -377,7 +520,7 @@ void retrieveMLB(int sockfd) {
         bzero(line, 1024);
         recv(sockfd, line, sizeof(line), 0);
 
-        if(strncmp("1111", line, 4) == 0) {
+        if(strncmp("0000", line, 4) == 0) {
             break;
         }
 
