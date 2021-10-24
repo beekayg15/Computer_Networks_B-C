@@ -31,21 +31,28 @@ void loginOrRegister(int sockfd, int player);
 int get_name_by_id(char user_name[]);
 int unique_user(char user_name[]);
 
+// Structure to store the Game details of the user
 struct user{
 	int userid;
 	char name[100];
 	int score;
 } splayer;
 
+// Structure to store the Registartion details of the user
 struct reg_details{
 	int userid;
 	char name[100];
 	char password[100];
 } player1, player2;
 
-char name[100];
-int temp_sockfd;
+char name[100];     //Stores the name of the registered user
+int temp_sockfd;    //Stores the socket descriptor of the first client
 
+/*
+Main Function
+Parameters: None
+Description: Driver Function to Establish Socket Connection with the Clients
+*/
 int main() {
     FILE* fptr  = fopen("leaderboard.bin", "ab");
     fclose(fptr);
@@ -64,11 +71,6 @@ int main() {
         printf("Socket Creation Successful!!\n");
 
     }
-
-    player1.userid = 1;
-    player2.userid = 2;
-    strcpy(player1.name,"Aravind");
-    strcpy(player2.name,"Hrithik");
 
     addr_len = sizeof(server_address);
     bzero(&server_address, addr_len);
@@ -117,6 +119,13 @@ int main() {
 
 }
 
+/*
+Login Screen Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+- int player : Stores if it is the first client or the second
+Description: The Function retrieves from the Login Page from which the User can choose to Login or Sign Up
+*/
 void loginOrRegister(int sockfd, int player) {
     printf("Asking Player %d to Register or Login...\n", player);
 
@@ -125,14 +134,22 @@ void loginOrRegister(int sockfd, int player) {
 
     recv(sockfd, buffer, 1024, 0);
 
-    if(buffer[0] == '1') {
+    if(buffer[0] == '1') {  // If user has chose to Register
         register_user(sockfd, player);
     } 
-
+    
+    // Else login
     login(sockfd, player);
 
 }
 
+/*
+Initiate Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: It first takes in the user's choice either to view leaderboard, multiplayer or single player
+If the user chooses single player the function continues to provide the requested service 
+*/
 void initiateGame(int sockfd) {
     int number_of_turns = 0;
     char buffer[1024];
@@ -141,25 +158,25 @@ void initiateGame(int sockfd) {
 
     recv(sockfd, buffer, 1024, 0);
         
-    if(strncmp("endgame", buffer, 7) == 0) {
+    if(strncmp("endgame", buffer, 7) == 0) { //If user has chosen to exit the game
         printf("The client has ended the game!!\n");
         close(sockfd);
         exit(0);
     }
 
-    if(buffer[0] == 'l') {
+    if(buffer[0] == 'l') { //If user has chosen to view the leaderboard
         printf("The Player wants to view the Learderboard!!\n");
         
         bzero(buffer, 1024);
         recv(sockfd, buffer, 1024, 0);
 
-        if(strncmp("sLeader", buffer, 7) == 0) {
+        if(strncmp("sLeader", buffer, 7) == 0) { //If user has chosen to view the singleplayer leaderboard
             printf("The player chose to view Single Player Leaderboard\n");
             transferSLB(sockfd);
-        } else if(strncmp("mLeader", buffer, 7) == 0) {
+        } else if(strncmp("mLeader", buffer, 7) == 0) { //If user has chosen to view the multiplayer leaderboard
             printf("The player chose to view Multiplayer Player Leaderboard\n");
             transferMLB(sockfd);
-        } else {
+        } else { //If user has chosen to move back
             printf("The player returned back to Home Screen\n");
             initiateGame(sockfd);
         }
@@ -168,7 +185,7 @@ void initiateGame(int sockfd) {
         return;
     }
 
-    if(buffer[0] == 'm') {
+    if(buffer[0] == 'm') { //If user has chosen to play in Multiplayer Mode
         printf("The Player has entered Multiplayer Mode!!\n");
         initiateMultiGame(sockfd);
         return;
@@ -180,10 +197,11 @@ void initiateGame(int sockfd) {
         return;
     }
 
+    // Else if the user wants to play in Single Player Mode
     char number[4] = "    ";
     int count = 0;
 
-    while(count < 4) {
+    while(count < 4) { //Generate a 4-digit number with distinct digits
         int flag = 0;
         int r = rand() % 9 + 49;
         
@@ -208,9 +226,10 @@ void initiateGame(int sockfd) {
     while(1) {
         bzero(buffer, 1024);
 
+        // Recieves the User's guess
         recv(sockfd, buffer, 1024, 0);
 
-        if(strncmp("exit", buffer, 4) == 0) {
+        if(strncmp("exit", buffer, 4) == 0) { //If the user has chosen to quit the current game
             printf("The client has left the current game!!\n");
             initiateGame(sockfd);
         }
@@ -219,13 +238,14 @@ void initiateGame(int sockfd) {
 
         number_of_turns++;
 
+        //Calculate the number of bulls and cows for the guess
         int bulls = numberOfBulls(buffer, number);
         int cows = numberOfCows(buffer, number);
         
         printf("Number of Bulls: %d\n", bulls);
         printf("Number of Cows: %d\n", cows);
 
-        if(bulls == 4) {
+        if(bulls == 4) { // Player has found the secret number
             bzero(buffer, 1024);
 
             updateleaderboard(player1.userid, number_of_turns);
@@ -254,7 +274,7 @@ void initiateGame(int sockfd) {
 
             send(sockfd, buffer, 1024, 0);
 
-            initiateGame(sockfd);
+            initiateGame(sockfd); // Start new Game
 
         }
 
@@ -293,6 +313,12 @@ void initiateGame(int sockfd) {
 
 }
 
+/*
+Initiate Multiplayer Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: Drives the Multiplayer game and establishes connection with the Second Client
+*/
 void initiateMultiGame(int sockfd) {
     printf("In Multiplayer Mode!!\n");
 
@@ -360,11 +386,18 @@ void initiateMultiGame(int sockfd) {
 
     }
 
-    loginOrRegister(client_socket, 2);
+    loginOrRegister(client_socket, 2); // To Login/Register the Second Player
 
     return;
 }
 
+/*
+Play Multiplayer Game Function
+Parameters:
+- int sockfd1 : Stores the Socket Descriptor to Communicate with the first Client
+- int sockfd1 : Stores the Socket Descriptor to Communicate with the Second Cleint
+Description: Drives the Multiplayer game and establishes connection with the Second Client
+*/
 void playMultiGame(int sockfd1, int sockfd2) {
     if(sockfd1 == 0) {
         sockfd1 = temp_sockfd;
@@ -518,6 +551,13 @@ void playMultiGame(int sockfd1, int sockfd2) {
     exit(0);
 }
 
+/*
+Number of Bulls Function
+Parameters:
+- char[] guess : Stores the 4-digit number guessed by the user
+- char[] num : Stores the actual 4-digit number generated by the Server
+Description: Calculates the number of bulls comparing the entered guess and the actual code
+*/
 int numberOfBulls(char guess[], char num[]) {
     int bulls = 0;
 
@@ -533,6 +573,13 @@ int numberOfBulls(char guess[], char num[]) {
 
 }
 
+/*
+Number of Cows Function
+Parameters:
+- char[] guess : Stores the 4-digit number guessed by the user
+- char[] num : Stores the actual 4-digit number generated by the Server
+Description: Calculates the number of cows comparing the entered guess and the actual code
+*/
 int numberOfCows(char guess[], char num[]) {
     int cows = 0;
 
@@ -551,6 +598,12 @@ int numberOfCows(char guess[], char num[]) {
 
 }
 
+/*
+Get Name by User-ID Function
+Parameters:
+- int user_id : Stores the user_id of the player
+Description: It reads the 'Registered_users.bin' file and finds the corresponding Name from the User-ID
+*/
 void getnamebyuserid(int user_id) {
 	printf("\nFunction Called");
 	
@@ -577,6 +630,12 @@ void getnamebyuserid(int user_id) {
 
 }
 
+/*
+Check User Already Exists Function
+Parameters:
+- int user_id : Stores the User_id of the player
+Description: Checks if the User's score is already present in the 'leaderboard.bin' file
+*/
 int checkuseralreadyexist(int user_id) {
 	char fileName[100] ;
 	
@@ -600,6 +659,13 @@ int checkuseralreadyexist(int user_id) {
 
 }
 
+/*
+Update Leaderboard Function
+Parameters:
+- int user_id : Stores the User_id of the player
+- int score : Stores the number of turns taken by the player to find the secret code
+Description: Updates the new Score taken by the user in the current Game
+*/
 void updateleaderboard(int user_id,int score) {
 	int flag = checkuseralreadyexist(user_id);
 
@@ -649,6 +715,12 @@ void updateleaderboard(int user_id,int score) {
 
 }
 
+/*
+Print Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: Prints the Top Scores taken by the users and Sends them to the Client
+*/
 void printsingleplayerleaderboard(int sockfd) {
     printf("\nSP Leaderboard\n");
     
@@ -691,7 +763,7 @@ void printsingleplayerleaderboard(int sockfd) {
 		}
 	}
 
-    printf("\n%d\n", count);
+    printf("\n%d Data's Retrieved\n", count);
 
 	for(int i=0;i<count;i++) {
 		printf("%d -> %s -> %d\n",arr[i].userid,arr[i].name,arr[i].score);
@@ -720,6 +792,15 @@ void printsingleplayerleaderboard(int sockfd) {
     fclose(fptr);
 }
 
+/*
+Update Multiplayer Leaderboard Function
+Parameters:
+- int user1 : Stores the User_id of the player 1
+- int user1scorev : Stores the number of turns taken by the player 1 to find the secret code
+- int user2 : Stores the User_id of the player 2
+- int user2score : Stores the number of turns taken by the player 2 to find the secret code
+Description: Updates the new Score taken by the users in the current Game
+*/
 void updatemultiplayerleaderboard(int user1,int user2,int user1score,int user2score) {
 	printf("updatemu");
 	
@@ -750,6 +831,12 @@ void updatemultiplayerleaderboard(int user1,int user2,int user1score,int user2sc
 
 }
 
+/*
+Print Multiplayer Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: Prints the Scores taken in various Multiplayer mode games and Sends them to the Client
+*/
 void printmultiplayerleaderboard(int sockfd) {
     printf("\nMP Leaderboard\n");
 
@@ -777,19 +864,37 @@ void printmultiplayerleaderboard(int sockfd) {
 
 }
 
+/*
+Print Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: Prints the Top Scores taken by the users and Sends them to the Client
+*/
 void transferSLB(int sockfd) {
     printsingleplayerleaderboard(sockfd);
     initiateGame(sockfd);
 
 }
 
+/*
+Print Multiplayer Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+Description: Prints the Scores taken in various Multiplayer mode games and Sends them to the Client
+*/
 void transferMLB(int sockfd) {
     printmultiplayerleaderboard(sockfd);
     initiateGame(sockfd);
 
 }
 
-
+/*
+Login Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+- int player : Stores if it is the first client or the second
+Description: To Login into the Account of an already Registered User
+*/
 void login(int sockfd, int player) {
 
     char buffer[1024];
@@ -862,6 +967,13 @@ void login(int sockfd, int player) {
 
 }
 
+/*
+Register Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Client
+- int player : Stores if it is the first client or the second
+Description: To Register an User and create a Profile for the User
+*/
 void register_user(int sockfd, int player) {
     printf("\nRegistration\n");
 	struct reg_details reg,temp;
@@ -927,6 +1039,12 @@ void register_user(int sockfd, int player) {
 
 }
 
+/*
+Unique User Function
+Parameters:
+- char[] user_name : Stores the Name of the User to check if the requested in avaiable
+Description: To Register an User and create a Profile for the User
+*/
 int unique_user(char user_name[]) {
 
 	FILE* file = fopen("Registered_users.bin","rb");
@@ -948,6 +1066,12 @@ int unique_user(char user_name[]) {
 	return 1;
 }
 
+/*
+Get User-ID by Name Function
+Parameters:
+- char[] user_name : Stores the Name of the User to check if the requested in avaiable
+Description: It reads the 'Registered_users.bin' file and finds the corresponding User-ID from the Name
+*/
 int get_name_by_id(char user_name[])
 {
 

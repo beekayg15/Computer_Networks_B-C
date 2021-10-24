@@ -21,18 +21,11 @@ void login(int sockfd);
 void loginScreen(int sockfd);
 void register_user(int sockfd);
 
-struct user{
-	int userid;
-	char name[100];
-	int score;
-} players;
-
-struct reg_details{
-	int userid;
-	char name[100];
-	char password[100];
-} player;
-
+/*
+Main Function
+Parameters: None
+Description: Driver Function to Establish Socket Connection
+*/
 int main(){
     socklen_t addr_len;
     int client_socket;
@@ -76,6 +69,12 @@ int main(){
 
 }
 
+/*
+Login Screen Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: The Function Displays the Login Page from which the User can choose to Login or Sign Up
+*/
 void loginScreen(int sockfd) {
     system("clear");
 
@@ -101,6 +100,12 @@ void loginScreen(int sockfd) {
 
 }
 
+/*
+Login Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: To Login into the Account of an already Registered User
+*/
 void login(int sockfd) {
     system("clear");
 	printf("\n\n\tBULLS AND COWS - LOG IN");
@@ -153,6 +158,12 @@ void login(int sockfd) {
 
 }
 
+/*
+Register Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: To Register an User and create a Profile for the User
+*/
 void register_user(int sockfd) {
     system("clear");
     printf("\n\n\tBULLS AND COWS - REGISTRATION");
@@ -194,7 +205,7 @@ void register_user(int sockfd) {
     bzero(buffer, 1024);
     recv(sockfd, buffer, 1024, 0);
 
-    printf("\nRegistration Successful!! Your user_id is %s\n", buffer);
+    printf("\n\n\t\tRegistration Successful!! Your user_id is %s\n", buffer);
 
     printf("\n\n\t\tPress any Key to Conitnue......");
     getch();
@@ -203,6 +214,12 @@ void register_user(int sockfd) {
 
 }
 
+/*
+Open Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It displays the Home Screen to the User and provides Various Choices
+*/
 void openGame(int sockfd) {
     system("clear");
 
@@ -246,6 +263,12 @@ void openGame(int sockfd) {
 
 }
 
+/*
+Start Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It interacts with the User to provide the Single Player Experience
+*/
 void startGame(int sockfd) {
     system("clear");
     
@@ -287,6 +310,12 @@ void startGame(int sockfd) {
 
 }
 
+/*
+Start Multiplayer Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It interacts with the User to provide the Single Player Experience
+*/
 void startMultiGame(int sockfd) {
     system("clear");
 
@@ -379,7 +408,7 @@ void startMultiGame(int sockfd) {
 
         system("clear");
 
-        printf("\n\n\t\tTurn : %d\n\n\t\tWaiting for Player 2 to make a Guess!!...", turn);
+        printf("\n\n\t\tTurn : %d\n\n\t\tWaiting for Player 2 to make a Guess!!...\n", turn);
         bzero(buffer, 1024);
 
         recv(sockfd, buffer, 1024, 0);
@@ -415,6 +444,12 @@ void startMultiGame(int sockfd) {
 
 }
 
+/*
+Start Multiplayer Game Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It provides extensive details on how to play the game and its rules
+*/
 void instructions(int sockfd) {
     system("clear");
 
@@ -439,6 +474,12 @@ void instructions(int sockfd) {
 
 }
 
+/*
+Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It provides the user with the choices to view either single player or multiplayer leaderboard
+*/
 void leaderbd(int sockfd) {
     system("clear");
 
@@ -470,6 +511,12 @@ void leaderbd(int sockfd) {
 
 }
 
+/*
+Retrieve Single Player Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It retrieves the single player leaderboard from the server and displays it
+*/
 void retrieveSLB(int sockfd) {
     system("clear");
     printf("\n\n\t\tSingle Player Leaderboard\n");
@@ -509,6 +556,12 @@ void retrieveSLB(int sockfd) {
 
 }
 
+/*
+Retrieve Multi Player Leaderboard Function
+Parameters:
+- int sockfd : Stores the Socket Descriptor to Communicate with the Server
+Description: It retrieves the multi player leaderboard from the server and displays it
+*/
 void retrieveMLB(int sockfd) {
     system("clear");
     printf("\n\n\tMulti-Player Leaderboard\n");
@@ -525,7 +578,7 @@ void retrieveMLB(int sockfd) {
         }
 
         count++;
-        printf("\n%s\n",line);
+        printf("\n\t\t%s\n",line);
     }
 
     if(count == 0) {
