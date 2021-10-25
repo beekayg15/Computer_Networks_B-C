@@ -28,7 +28,7 @@ void transferMLB(int sockfd);
 void login(int sockfd, int player);
 void register_user(int sockfd, int player);
 void loginOrRegister(int sockfd, int player);
-int get_name_by_id(char user_name[]);
+int get_id_by_name(char user_name[]);
 int unique_user(char user_name[]);
 
 // Structure to store the Game details of the user
@@ -110,8 +110,6 @@ int main() {
         printf("Connection with Client Established Successfully!!\n");
 
     }
-
-    temp_sockfd = client_socket;
 
     loginOrRegister(client_socket, 1);
 
@@ -385,6 +383,8 @@ void initiateMultiGame(int sockfd) {
         send(sockfd, buffer, 1024, 0);
 
     }
+
+    temp_sockfd = sockfd;
 
     loginOrRegister(client_socket, 2); // To Login/Register the Second Player
 
@@ -690,12 +690,12 @@ void updateleaderboard(int user_id,int score) {
 			    
 		}
 		fclose(fPtr);
-		printf("\nSuccessfully replaced  line with .");
+		printf("\nSuccessfully replaced line\n");
 
 	} else {
 		FILE* file = fopen( "leaderboard.bin", "ab+"); 
 		if(!file) {
-			printf("\n Unable to open : leaderboard.bin");
+			printf("\n Unable to open : leaderboard.bin\n");
 
 		}
 
@@ -916,7 +916,7 @@ void login(int sockfd, int player) {
 
 	} else {
 
-        int user_id = get_name_by_id(pname);
+        int user_id = get_id_by_name(pname);
 
         while(fread(&user1, sizeof(user1), 1, fp)) {
             if(user1.userid == user_id) {
@@ -1072,7 +1072,7 @@ Parameters:
 - char[] user_name : Stores the Name of the User to check if the requested in avaiable
 Description: It reads the 'Registered_users.bin' file and finds the corresponding User-ID from the Name
 */
-int get_name_by_id(char user_name[])
+int get_id_by_name(char user_name[])
 {
 
 	FILE* file = fopen("Registered_users.bin","rb");

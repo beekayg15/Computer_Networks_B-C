@@ -61,8 +61,6 @@ int main(){
     printf("Press any Key to Continue......");
     getch();
 
-    player.userid = 1;
-
     loginScreen(client_socket);
 
     return 0;
@@ -319,7 +317,7 @@ Description: It interacts with the User to provide the Single Player Experience
 void startMultiGame(int sockfd) {
     system("clear");
 
-    printf("\n\n\t\tYou have entered Multiplayer Mode\n\n\n\t\tWaiting for Player 2 to establish connection with the server");
+    printf("\n\n\t\tYou have entered Multiplayer Mode\n\n\n\t\tWaiting for Player 2 to establish connection with the server...\n");
 
     char buffer[1024];
     bzero(buffer, 1024);
