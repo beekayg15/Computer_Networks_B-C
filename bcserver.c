@@ -738,9 +738,6 @@ void printsingleplayerleaderboard(int sockfd) {
         return;
 	}
 
-	int uid[100];
-	char names[100][100];
-	int scores[100];
 	int count=0;
 	struct user arr[100];
 
