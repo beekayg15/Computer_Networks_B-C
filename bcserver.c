@@ -732,7 +732,7 @@ void printsingleplayerleaderboard(int sockfd) {
 	FILE * fptr;
 	fptr  = fopen("leaderboard.bin", "r+b");
 	if (fptr == NULL) {
-		printf("Unable to open : leaderboard.bin");
+		printf("Unable to open : leaderboard.bin\n");
         strcpy(line, "0000");
         send(sockfd, line, 1024, 0);
         return;
@@ -799,7 +799,7 @@ Parameters:
 Description: Updates the new Score taken by the users in the current Game
 */
 void updatemultiplayerleaderboard(int user1,int user2,int user1score,int user2score) {
-	printf("updatemu");
+	printf("\nupdatemu\n");
 	
     char fileName[100] = "multiplayer-leaderboard.txt";
 	FILE* file = fopen(fileName, "a"); 
@@ -909,7 +909,7 @@ void login(int sockfd, int player) {
 
 	FILE* fp = fopen("Registered_users.bin","rb");
 	if(fp == NULL) {
-		printf("\n Unable to open : Registered_users.bin");
+		printf("\n Unable to open : Registered_users.bin\n");
 
 	} else {
 
@@ -1046,7 +1046,7 @@ int unique_user(char user_name[]) {
 
 	FILE* file = fopen("Registered_users.bin","rb");
 	if(!file) {
-		printf("\n Unable to open : Registered_users.bin");
+		printf("\n Unable to open : Registered_users.bin\n");
         return 1;
 	}
 
@@ -1075,7 +1075,7 @@ int get_id_by_name(char user_name[])
 	FILE* file = fopen("Registered_users.bin","rb");
 	if(!file)
 	{
-		printf("\n Unable to open : Registered_users.bin");
+		printf("\n Unable to open : Registered_users.bin\n");
         exit(0);
 	}
 	struct reg_details u;

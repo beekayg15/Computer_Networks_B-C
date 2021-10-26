@@ -583,7 +583,7 @@ void retrieveMLB(int sockfd) {
         printf("\n\t\tUnable to open the Leaderboard");
     }
 
-    printf("\n\nPress any Key to continue......");
+    printf("\n\n\t\tPress any Key to continue......");
     getch();
     
     openGame(sockfd);

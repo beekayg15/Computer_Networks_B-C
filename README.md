@@ -32,11 +32,30 @@ gcc bcgame.c -o bcgame
 ```
 
 ## Screen Shots
-<img src="screenshots/1.png"/>
-<img src="screenshots/2.png"/>
-<img src="screenshots/3.png"/>
-<img src="screenshots/4.png"/>
-<img src="screenshots/5.png"/>
+### Server
+<img src="screenshots/s1.png"/>
+<img src="screenshots/s2.png"/>
+<img src="screenshots/s3.png"/>
+<img src="screenshots/s4.png"/>
+<img src="screenshots/s5.png"/>
+### Player 1
+<img src="screenshots/a1.png"/>
+<img src="screenshots/a2.png"/>
+<img src="screenshots/a3.png"/>
+<img src="screenshots/a4.png"/>
+<img src="screenshots/a5.png"/>
+<img src="screenshots/a6.png"/>
+<img src="screenshots/a7.png"/>
+<img src="screenshots/a8.png"/>
+<img src="screenshots/a9.png"/>
+<img src="screenshots/a10.png"/>
+<img src="screenshots/a11.png"/>
+<img src="screenshots/a12.png"/>
+### Player 2
+<img src="screenshots/b1.png"/>
+<img src="screenshots/b2.png"/>
+<img src="screenshots/b3.png"/>
+<img src="screenshots/b4.png"/>
 
 ## Components of Project :
 - **C** files - 2
