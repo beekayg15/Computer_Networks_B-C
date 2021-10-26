@@ -38,6 +38,7 @@ gcc bcgame.c -o bcgame
 <img src="screenshots/s3.png"/>
 <img src="screenshots/s4.png"/>
 <img src="screenshots/s5.png"/>
+
 ### Player 1
 <img src="screenshots/a1.png"/>
 <img src="screenshots/a2.png"/>
@@ -51,6 +52,7 @@ gcc bcgame.c -o bcgame
 <img src="screenshots/a10.png"/>
 <img src="screenshots/a11.png"/>
 <img src="screenshots/a12.png"/>
+
 ### Player 2
 <img src="screenshots/b1.png"/>
 <img src="screenshots/b2.png"/>
