@@ -65,9 +65,9 @@ gcc bcgame.c -o bcgame
 **Note** : 
 The game has been further developed using `HTML5`, `CSS3` and `JavaScript` with a better graphical model and an interactive user-friendly layout. Click on the link below for more details.
 
-Project Link: https://github.com/BarathKumarBK-15/BullsandCowsWebPage
+Project Link: https://github.com/beekayg15/BullsandCowsWebPage
 
-Game Link: https://barathkumarbk-15.github.io/BullsandCowsWebPage
+Game Link: https://beekayg15.github.io/BullsandCowsWebPage
 
 ## Contributors
 - <a href="https://github.com/Aravindkrish25"> Aravind M </a>
